@@ -1,11 +1,19 @@
 const express = require("express");
-const sgMail = require("@sendgrid/mail");
+const nodemailer = require("nodemailer");
 const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 4173;
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname), { extensions: ["html"] }));
@@ -29,9 +37,9 @@ app.post("/api/rsvp", async (req, res) => {
       ? `Yes — ${plusOneName || "Guest"}`
       : "No";
 
-    const msg = {
-      to: "preciousosara@gmail.com",
-      from: { email: "noreply@mycastellum.com", name: "Wedding Guest" },
+    await transporter.sendMail({
+      from: '"D&P Wedding" <admin@deefoundhisprecious.world>',
+      to: ["danyblaze998@gmail.com", "preciousosara@gmail.com"],
       subject: `RSVP from ${name.trim()} — ${attendingText}`,
       html: `
         <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; padding: 32px; background: #faf9f6; border: 1px solid #e8e0d0;">
@@ -57,24 +65,18 @@ app.post("/api/rsvp", async (req, res) => {
           </p>
         </div>
       `,
-    };
-
-    await sgMail.send(msg);
+    });
 
     return res.json({
       success: true,
       message: `Thank you, ${name.trim()}! Your RSVP has been received.`,
     });
   } catch (error) {
-    const body = error?.response?.body;
-    console.error("RSVP error:", body || error.message);
-
-    let message = "Something went wrong. Please try again.";
-    if (body?.errors?.[0]?.message?.includes("authorization")) {
-      message = "Email service configuration error. Please contact the couple directly.";
-    }
-
-    return res.json({ success: false, message });
+    console.error("RSVP error:", error.message);
+    return res.json({
+      success: false,
+      message: "Something went wrong. Please try again.",
+    });
   }
 });
 
