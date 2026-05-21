@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/olamideajayi/Developers/**)",
+      "Bash(git -C /Users/olamideajayi/Developers/wedding remote -v)",
+      "Bash(rm -rf /Users/olamideajayi/Developers/toinfinity/.git && ls -la /Users/olamideajayi/Developers/toinfinity | head -10)"
+    ],
+    "additionalDirectories": [
+      "/Users/olamideajayi/Developers/toinfinity/.git"
+    ]
+  }
+}

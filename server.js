@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 4173;
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
-  secure: true,
+  secure: Number(process.env.SMTP_PORT) === 465,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -38,7 +38,7 @@ app.post("/api/rsvp", async (req, res) => {
       : "No";
 
     await transporter.sendMail({
-      from: '"D&P Wedding" <admin@deefoundhisprecious.world>',
+      from: `"D&P Wedding" <${process.env.SMTP_USER}>`,
       to: ["danyblaze998@gmail.com", "preciousosara@gmail.com"],
       subject: `RSVP from ${name.trim()} — ${attendingText}`,
       html: `
